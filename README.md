@@ -13,6 +13,7 @@ Shows the Knora persistent identifier (ARK identifier) of a given project and re
 ### Usage
 
 Language: PHP CLI
+
 Usage: `php get_ark_by_resource_id.php -project_id [int] -resource_id [int] -mode ["json"|"default"]`
 
 Params:
@@ -33,6 +34,7 @@ Gets the Knora resource id from a given LIMC monument id.
 ### Usage
 
 Language: PHP CLI
+
 Usage: `php get_resource_id_by_monument_id.php -monument_id [int] -mode -mode ["json"|"default"]`
 
 Params:
