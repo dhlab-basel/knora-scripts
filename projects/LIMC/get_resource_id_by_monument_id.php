@@ -31,6 +31,7 @@ function main(array $argv) {
  * Gets the resource id from the salsah.org server.
  * @param $monument_id
  * @return int
+ * @throws
  */
 function getResourceId(int $monument_id): int {
 	
@@ -77,9 +78,11 @@ function getString(int $monument_id, int $resource_id): string {
 
 /**
  * Gets json.
- * @param $project_id
- * @param $resource_id
+ * @param $argv
+ * @param $param
+ * @param $default
  * @return string
+ * @throws
  */
 function getValueOfArgs(array $argv, string $param, $default = null) {
 	for ($i = 0; $i < count($argv); $i++) {

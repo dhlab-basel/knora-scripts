@@ -62,9 +62,11 @@ function getString(int $project_id, int $resource_id, string $handle_id): string
 
 /**
  * Gets json.
- * @param $project_id
- * @param $resource_id
+ * @param $argv
+ * @param $param
+ * @param $default
  * @return string
+ * @throws Exception
  */
 function getValueOfArgs(array $argv, string $param, $default = null) {
 	for ($i = 0; $i < count($argv); $i++) {
