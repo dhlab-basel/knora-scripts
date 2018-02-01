@@ -1,105 +1,168 @@
 <?php
 
-const API_URL = "http://www.salsah.org/api";
-
 /**
- * Performs a HTTP GET Salsah request with basic auth.
- * @param string $url
- * @param string $auth
- * @return array|null
+ * Class SalsahResponse.
  */
-function get(string $url, string $auth = ""): ?array {
+class SalsahResponse {
 
-    // Do the HTTP request
-    $opts = array("http" =>
-        array(
-            "method"  => "GET",
-            "header"  => "Content-type: application/json\r\nAuthorization: Basic " . $auth
-        )
-    );
-    $context = stream_context_create($opts);
-    $result = @file_get_contents(API_URL . $url, false, $context);
+    /**
+     * @var int
+     */
+    public $responseCode = 0;
 
-    if ($result === false) {
-        return null;
+    /**
+     * @var string
+     */
+    public $responseString = "";
+
+    /**
+     * @var string
+     */
+    public $contentType = "";
+
+    /**
+     * @var array the full headers data
+     */
+    public $headers = [];
+
+    /**
+     * @var array the json object
+     */
+    public $body = [];
+
+
+    public function __construct(array $responseHeader, $result) {
+        $this->saveHeaders($responseHeader);
+        $this->saveResult($result);
     }
 
-    return \json_decode($result, true);
+    /**
+     * Saves the headers
+     * @param array $responseHeader
+     */
+    private function saveHeaders(array $responseHeader) {
 
-}
+        $head = array();
 
-/**
- * Performs a HTTP POST Salsah request with basic auth.
- * @param string $url
- * @param array $data
- * @param string $auth
- * @return array|null
- */
-function post(string $url, array $data, string $auth = ""): ?array {
+        foreach($responseHeader as $k => $v) {
+            $t = explode( ':', $v, 2 );
+            if (isset($t[1])) {
+                $head[trim($t[0])] = trim($t[1]);
+            } else {
+                $head[] = $v;
+                if (preg_match("#HTTP/[0-9\.]+\s+([0-9]+)\s(([A-Za-z]+\s?)+)#", $v, $out)) {
+                    $head["responseCode"] = intval($out[1]);
+                    $this->responseCode = $head["responseCode"];
+                    $this->responseString = $out[2];
+                }
+            }
+        }
 
-    $jsonString = \json_encode($data);
+        $this->headers = $head;
+        $this->contentType = $head["Content-Type"];
 
-    // Do the HTTP request
-    $opts = array("http" =>
-        array(
-            "method"  => "POST",
-            "header"  => "Content-type: application/json\r\nAuthorization: Basic " . $auth,
-            "content" => $jsonString
-        )
-    );
-    $context = stream_context_create($opts);
-    $result = file_get_contents(API_URL . $url, false, $context);
-    var_dump($http_response_header);
-
-    if ($result === false) {
-        return null;
     }
 
-    return \json_decode($result, true);
+    /**
+     * Saves the result.
+     * @param $result
+     */
+    private function saveResult($result) {
 
-}
+        if ($result === false) return;
 
-/**
- * Performs a HTTP PUT Salsah request with basic auth.
- * @param string $url
- * @param array $data
- * @param string $auth
- * @return array|null
- */
-function put(string $url, array $data, string $auth = ""): ?array {
+        $body = \json_decode($result, true);
 
-}
+        if (is_array($body)) $this->body = $body;
 
-/**
- * Performs a HTTP DELETE Salsah request with basic auth.
- * @param string $url
- * @param string $auth
- * @return array|null
- */
-function delete(string $url, string $auth = ""): ?array {
-
-    // Do the HTTP request
-    $opts = array("http" =>
-        array(
-            "method"  => "DELETE",
-            "header"  => "Content-type: application/json\r\nAuthorization: Basic " . $auth
-        )
-    );
-    $context = stream_context_create($opts);
-    $result = @file_get_contents(API_URL . $url, false, $context);
-
-    if ($result === false) {
-        return null;
     }
 
-    return \json_decode($result, true);
-
 }
 
+/**
+ * Class SalsahRequest.
+ */
+class SalsahRequest {
 
-//var_dump(get("/resources/11760492"));
-var_dump(post("/values/", [], "=="));
-//var_dump(delete("/values/11760515", "=="));
+    const API_URL = "http://www.salsah.org/api";
 
+    private const METHOD_GET = "GET";
+    private const METHOD_POST = "POST";
+    private const METHOD_PUT = "PUT";
+    private  const METHOD_DELETE = "DELETE";
+
+    /**
+     * SalsahRequest constructor.
+     */
+    function __construct() {}
+
+    /**
+     * Performs a HTTP GET Salsah request with basic auth.
+     * @param string $url
+     * @param string $auth
+     * @return SalsahResponse
+     */
+    function get(string $url, string $auth = ""): SalsahResponse {
+        return $this->makeRequest(self::METHOD_GET, $auth, $url);
+    }
+
+    /**
+     * Performs a HTTP POST Salsah request with basic auth.
+     * @param string $url
+     * @param array $data
+     * @param string $auth
+     * @return SalsahResponse
+     */
+    function post(string $url, array $data, string $auth = ""): SalsahResponse {
+        return $this->makeRequest(self::METHOD_POST, $auth, $url, $data);
+    }
+
+    /**
+     * Performs a HTTP PUT Salsah request with basic auth.
+     * @param string $url
+     * @param array $data
+     * @param string $auth
+     * @return SalsahResponse
+     */
+    function put(string $url, array $data, string $auth = ""): SalsahResponse {
+        return $this->makeRequest(self::METHOD_PUT, $auth, $url, $data);
+    }
+
+    /**
+     * Performs a HTTP DELETE Salsah request with basic auth.
+     * @param string $url
+     * @param string $auth
+     * @return SalsahResponse
+     */
+    function delete(string $url, string $auth = ""): SalsahResponse {
+        return $this->makeRequest(self::METHOD_DELETE, $auth, $url);
+    }
+
+    private function makeRequest(string $method, string $auth, string $url, array $data = []): SalsahResponse {
+
+        echo "\n-\n" . $method . " " . $url;
+
+        // Do the HTTP request
+        $opts = ["http" =>
+            [
+                "method"  => $method,
+                "header"  => "Content-type: application/json\r\nAuthorization: Basic " . $auth,
+                "content" => \count($data) > 0 ? \json_encode($data) : ""
+            ]
+        ];
+        $context = stream_context_create($opts);
+        $result = @file_get_contents(self::API_URL . $url, false, $context);
+
+        // Save the result in object
+        $salsahResponse = new SalsahResponse($http_response_header, $result);
+
+        echo "\n" . $salsahResponse->responseCode . " " . $salsahResponse->responseString;
+
+        return $salsahResponse;
+
+    }
+
+
+}
 
 ?>

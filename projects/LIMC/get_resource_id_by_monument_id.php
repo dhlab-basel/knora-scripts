@@ -64,7 +64,7 @@ function getJson(int $monument_id, int $resource_id): string {
 
 /**
  * Gets string.
- * @param $project_id
+ * @param $monument_id
  * @param $resource_id
  * @return string
  */
