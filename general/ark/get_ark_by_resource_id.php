@@ -4,7 +4,8 @@ include("ark_inc.php");
 
 /**
  * Main method.
- * @param $argv
+ * @param array $argv
+ * @throws Exception
  */
 function main(array $argv) {
 

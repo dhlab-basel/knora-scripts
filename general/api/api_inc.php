@@ -100,10 +100,11 @@ class SalsahRequest {
      * Performs a HTTP GET Salsah request with basic auth.
      * @param string $url
      * @param string $auth
+     * @param string $message
      * @return SalsahResponse
      */
-    function get(string $url, string $auth = ""): SalsahResponse {
-        return $this->makeRequest(self::METHOD_GET, $auth, $url);
+    function get(string $url, string $auth = "", string $message = ""): SalsahResponse {
+        return $this->makeRequest(self::METHOD_GET, $auth, $url, $message);
     }
 
     /**
@@ -111,10 +112,11 @@ class SalsahRequest {
      * @param string $url
      * @param array $data
      * @param string $auth
+     * @param string $message
      * @return SalsahResponse
      */
-    function post(string $url, array $data, string $auth = ""): SalsahResponse {
-        return $this->makeRequest(self::METHOD_POST, $auth, $url, $data);
+    function post(string $url, array $data, string $auth = "", string $message = ""): SalsahResponse {
+        return $this->makeRequest(self::METHOD_POST, $auth, $url, $data, $message);
     }
 
     /**
@@ -122,25 +124,36 @@ class SalsahRequest {
      * @param string $url
      * @param array $data
      * @param string $auth
+     * @param string $message
      * @return SalsahResponse
      */
-    function put(string $url, array $data, string $auth = ""): SalsahResponse {
-        return $this->makeRequest(self::METHOD_PUT, $auth, $url, $data);
+    function put(string $url, array $data, string $auth = "", string $message = ""): SalsahResponse {
+        return $this->makeRequest(self::METHOD_PUT, $auth, $url, $data, $message);
     }
 
     /**
      * Performs a HTTP DELETE Salsah request with basic auth.
      * @param string $url
      * @param string $auth
+     * @param string $message
      * @return SalsahResponse
      */
-    function delete(string $url, string $auth = ""): SalsahResponse {
-        return $this->makeRequest(self::METHOD_DELETE, $auth, $url);
+    function delete(string $url, string $auth = "", string $message = ""): SalsahResponse {
+        return $this->makeRequest(self::METHOD_DELETE, $auth, $url, $message);
     }
 
-    private function makeRequest(string $method, string $auth, string $url, array $data = []): SalsahResponse {
+    /**
+     * Makes the Salsah request.
+     * @param string $method
+     * @param string $auth
+     * @param string $url
+     * @param array  $data
+     * @param string $message
+     * @return SalsahResponse
+     */
+    private function makeRequest(string $method, string $auth, string $url, array $data = [], string $message = ""): SalsahResponse {
 
-        echo "\n-\n" . $method . " " . $url;
+        echo $method . " " . $url . "\t \t" . $message;
 
         // Do the HTTP request
         $opts = ["http" =>
@@ -156,7 +169,7 @@ class SalsahRequest {
         // Save the result in object
         $salsahResponse = new SalsahResponse($http_response_header, $result);
 
-        echo "\n" . $salsahResponse->responseCode . " " . $salsahResponse->responseString;
+        echo "\t \t" . $salsahResponse->responseCode . " " . $salsahResponse->responseString . "\n";
 
         return $salsahResponse;
 
