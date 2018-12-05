@@ -79,5 +79,3 @@ function getValueOfArgs(array $argv, string $param, $default = null) {
 }
 
 main(isset($argv) ? $argv : []);
-
-?>

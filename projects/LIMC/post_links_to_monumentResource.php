@@ -1,9 +1,9 @@
 <?php
 
 require_once "../../general/api/api_inc.php";
-require_once "get_resource_id_by_monument_id.php";
+require_once "monument_resource.php";
 
-class LinksToMonument {
+class LinksToMonumentResource {
 
     /**
      * Main method.
@@ -12,9 +12,9 @@ class LinksToMonument {
      */
     static function main(array $argv) {
 
-        $url = self::getValueOfArgs($argv, "-url", null);
-        $path = self::getValueOfArgs($argv, "-path", null);
-        $auth = self::getValueOfArgs($argv, "-auth", null);
+        $url = self::getValueOfArgs($argv, "-url", "");
+        $path = self::getValueOfArgs($argv, "-path", "");
+        $auth = self::getValueOfArgs($argv, "-auth", "");
 
         switch ($url) {
 
@@ -22,7 +22,7 @@ class LinksToMonument {
             case "museum":
             case "monument":
 
-                $pltm = new LinksToMonument();
+                $pltm = new LinksToMonumentResource();
                 $array = $pltm->getJsonArrayFromPath($path);
                 $pltm->postDataToSalsahMonument("limc:" . $url . "Url", $array, $auth);
 
@@ -93,7 +93,7 @@ class LinksToMonument {
         foreach ($array as $object) {
 
             // Get resource id
-            $ribmi = new ResourceIdByMonumentId();
+            $ribmi = new MonumentResource();
             $resource_id = $ribmi->getResourceId($object["id"]);
 
             // Make salsah post request
@@ -134,5 +134,5 @@ class LinksToMonument {
 }
 
 if (isset($argv) && isset($argv[0]) && $argv[0] === basename(__FILE__)) {
-    LinksToMonument::main($argv);
+    LinksToMonumentResource::main($argv);
 }

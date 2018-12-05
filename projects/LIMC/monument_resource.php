@@ -1,10 +1,13 @@
 <?php
 
-class ResourceIdByMonumentId {
+require_once "../../general/api/api_inc.php";
+
+class MonumentResource {
 
     /**
      * Main method.
      * @param $argv
+     * @throws
      */
     static function main(array $argv) {
 
@@ -12,7 +15,7 @@ class ResourceIdByMonumentId {
         $monument_id = self::getValueOfArgs($argv, "-monument_id");
 
         // Get resource_id from salsah.org
-        $resourceIdByMonumentId = new ResourceIdByMonumentId();
+        $resourceIdByMonumentId = new MonumentResource();
         $resource_id = $resourceIdByMonumentId->getResourceId($monument_id);
 
         $str = "";
@@ -26,7 +29,7 @@ class ResourceIdByMonumentId {
 
         }
 
-        echo $str;
+        echo $str . "\n";
 
     }
 
@@ -38,13 +41,19 @@ class ResourceIdByMonumentId {
      */
     function getResourceId(int $monument_id): int {
 
-        $url = "http://salsah.org/api/search/?searchtype=extended&property_id%5B%5D=619&compop%5B%5D=EQ&searchval%5B%5D=" . $monument_id . "&show_nrows=1&start_at=0&progvalfile=prog_945971.salsah&filter_by_restype=70";
-        $jsonString = file_get_contents($url);
+        $url = "/search/?searchtype=extended&property_id%5B%5D=619&compop%5B%5D=EQ&searchval%5B%5D=" . $monument_id . "&show_nrows=1&start_at=0&filter_by_restype=70";
 
-        $jsonArray = json_decode($jsonString, true);
+        $salsahRequest = new SalsahRequest();
+        $salsahResponse = $salsahRequest->get($url, "", "monument_id: " . $monument_id);
+
+        $jsonArray = $salsahResponse->body;
 
         if (isset($jsonArray["subjects"][0]["obj_id"]) === false) {
-            throw new Exception("");
+            if (isset($jsonArray["subjects"])) {
+                throw new Exception("404: Resource not found", 404);
+            } else {
+                throw new Exception("500: Unknown error", 500);
+            }
         }
 
         return str_replace("_-_local", "", $jsonArray["subjects"][0]["obj_id"]);
@@ -75,7 +84,7 @@ class ResourceIdByMonumentId {
         $str = "-----\n";
         $str .= "Monument ID = " . $monument_id . "\n";
         $str .= "Resource ID = " . $resource_id . "\n";
-        $str .= "-----\n";
+        $str .= "-----";
         return $str;
     }
 
@@ -99,7 +108,5 @@ class ResourceIdByMonumentId {
 }
 
 if (isset($argv) && isset($argv[0]) && $argv[0] === basename(__FILE__)) {
-    ResourceIdByMonumentId::main($argv);
+    MonumentResource::main($argv);
 }
-
-?>
