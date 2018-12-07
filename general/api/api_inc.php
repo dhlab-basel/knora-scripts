@@ -139,11 +139,10 @@ class SalsahRequest {
             'Content-Type: multipart/form-data',
             "Authorization: Basic " . $auth
         ]);
-        curl_setopt($cid, CURLOPT_VERBOSE, 1);
-        curl_setopt($cid, CURLOPT_RETURNTRANSFER, true);
-        //curl_setopt($cid, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        //curl_setopt($cid, CURLOPT_USERPWD, $GLOBALS['username'].':'.$GLOBALS['password']);
-        curl_setopt($cid, CURLOPT_POST, true);
+        7/ curl_setopt($cid, CURLOPT_VERBOSE, 1);
+        curl_setopt($cid, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($cid, CURLOPT_POST, 1);
+        curl_setopt($cid, CURLOPT_HEADER, 1);
 
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimetype = finfo_file($finfo, $filePath);
@@ -162,26 +161,7 @@ class SalsahRequest {
 
         curl_close($cid);
 
-        /*
-
-        // Do the HTTP request
-        $opts = ["http" =>
-            [
-                "method"  => "POST",
-                "header"  => "Content-type: multipart/form-data\r\nAuthorization: Basic " . $auth,
-                "content" => http_build_query([
-                    "data" => ( \count($data) > 0 ? \json_encode($data) : "{}" ),
-                    "file" => $file
-                ])
-            ]
-        ];
-        $context = stream_context_create($opts);
-        $result = @file_get_contents(self::API_URL . $url, false, $context);
-*/
-
-
         // Save the result in object
-        var_dump(\json_decode($body));
         $salsahResponse = new SalsahResponse(\explode($header, "\n"), $body);
 
         echo "\t \t" . $salsahResponse->responseCode . " " . $salsahResponse->responseString . "\n";
