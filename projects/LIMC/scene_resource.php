@@ -1,8 +1,9 @@
 <?php
 
+require_once "../../general/api/resource.php";
 require_once "../../general/api/api_inc.php";
 
-class SceneResource {
+class SceneResource extends Resource {
 
     /**
      * Main method.
@@ -12,24 +13,34 @@ class SceneResource {
     static function main(array $argv) {
 
         $mode = self::getValueOfArgs($argv, "-mode", "json");
-        $scene_id = self::getValueOfArgs($argv, "-scene_id");
+        $auth = self::getValueOfArgs($argv, "-auth", "");
+        $method = self::getValueOfArgs($argv, "-method");
 
-        // Get resource_id from salsah.org
-        $resourceIdBySceneId = new SceneResource();
-        $resource_id = $resourceIdBySceneId->getResourceId($scene_id);
+        $resource = new SceneResource();
+        switch ($method) {
 
-        $str = "";
-        switch ($mode) {
-            case "json":
-                $str = $resourceIdBySceneId->getJson($scene_id, $resource_id);
+            case "getById":
+                $scene_id = self::getValueOfArgs($argv, "-scene_id");
+                $resource_id = $resource->getResourceId($scene_id);
+                if ($mode === "json") echo $resource->getJson($scene_id, $resource_id);
+                else echo $resource->getString($scene_id, $resource_id);
                 break;
+
+            case "putPhoto":
+                $scene_resource_id = self::getValueOfArgs($argv, "-resource_id");
+                $photo_resource_id = self::getValueOfArgs($argv, "-photo_resource_id");
+                $resource->addPhotoByResourceId($scene_resource_id, $photo_resource_id, $auth);
+                break;
+
+            case "delete":
+                $resource_id = self::getValueOfArgs($argv, "-resource_id");
+                $resource->deleteByResourceId($resource_id, $auth);
+                break;
+
             default:
-                $str = $resourceIdBySceneId->getString($scene_id, $resource_id);
                 break;
 
         }
-
-        echo $str . "\n";
 
     }
 
@@ -61,12 +72,44 @@ class SceneResource {
     }
 
     /**
+     * Adds a photo to a scene
+     * @param int $scene_resource_id
+     * @param int $photo_resource_id
+     * @param string $auth
+     * @throws Exception
+     */
+    function addPhotoByResourceId(int $scene_resource_id, int $photo_resource_id, string $auth) {
+
+        $url = "/values/";
+
+        $salsahRequest = new SalsahRequest();
+        $salsahResponse = $salsahRequest->post($url, [
+            "res_id" => $scene_resource_id,
+            "value_arr" => [
+                [
+                    "value" => $photo_resource_id,
+                    "prop" => "limc:photo"
+                ]
+            ]
+        ], $auth, "scene_resource_id: " . $scene_resource_id . ", photo_resource_id: " . $photo_resource_id);
+
+        $jsonArray = $salsahResponse->body;
+
+        if (isset($jsonArray["status"]) === false) {
+            throw new Exception("500: Unknown error", 500);
+        } else if ($jsonArray["status"] !== 0) {
+            throw new Exception("Status " . $jsonArray["status"] . ": " . $jsonArray["errormsg"], $jsonArray["status"]);
+        }
+
+    }
+
+    /**
      * Gets json.
      * @param $scene_id
      * @param $resource_id
      * @return string
      */
-    private function getJson(int $scene_id, int $resource_id): string {
+    protected function getJson(int $scene_id, int $resource_id = 0): string {
         $array = [
             "resource_id" => $resource_id,
             "scene_id" => $scene_id
@@ -80,29 +123,12 @@ class SceneResource {
      * @param $resource_id
      * @return string
      */
-    private function getString(int $scene_id, int $resource_id): string {
+    protected function getString(int $scene_id, int $resource_id = 0): string {
         $str = "-----\n";
         $str .= "Scene ID = " . $scene_id . "\n";
         $str .= "Resource ID = " . $resource_id . "\n";
         $str .= "-----";
         return $str;
-    }
-
-    /**
-     * Gets json.
-     * @param $argv
-     * @param $param
-     * @param $default
-     * @return string
-     * @throws
-     */
-    private static function getValueOfArgs(array $argv, string $param, $default = null) {
-        for ($i = 0; $i < count($argv); $i++) {
-            if ($argv[$i] === $param && isset($argv[$i + 1])) {
-                return $argv[$i + 1];
-            }
-        }
-        if ($default === null) throw new Exception("Argument -" . $param . " not found.");
     }
 
 }

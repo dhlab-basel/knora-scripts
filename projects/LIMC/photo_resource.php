@@ -13,9 +13,9 @@ class PhotoResource extends Resource {
      */
     static function main(array $argv) {
 
+        $mode = self::getValueOfArgs($argv, "-mode", "json");
         $auth = self::getValueOfArgs($argv, "-auth");
         $method = self::getValueOfArgs($argv, "-method");
-        $scene_id = self::getValueOfArgs($argv, "-scene_id", -1);
 
         $resource = new PhotoResource();
         switch ($method) {
@@ -23,7 +23,8 @@ class PhotoResource extends Resource {
             case "postWithImage":
                 $imageUrl = self::getValueOfArgs($argv, "-image_url");
                 $resource_id = $resource->postResource($imageUrl, $auth);
-                echo $resource->getJson($resource_id);
+                if ($mode === "json") echo $resource->getJson($resource_id);
+                else echo $resource->getString($resource_id);
                 break;
 
             case "delete":
