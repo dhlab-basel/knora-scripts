@@ -139,7 +139,7 @@ class SalsahRequest {
             'Content-Type: multipart/form-data',
             "Authorization: Basic " . $auth
         ]);
-        7/ curl_setopt($cid, CURLOPT_VERBOSE, 1);
+        //curl_setopt($cid, CURLOPT_VERBOSE, 1);
         curl_setopt($cid, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($cid, CURLOPT_POST, 1);
         curl_setopt($cid, CURLOPT_HEADER, 1);
