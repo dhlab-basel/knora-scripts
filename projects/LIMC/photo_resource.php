@@ -65,7 +65,7 @@ class PhotoResource extends Resource {
         foreach ($splFileInfos as $splFileInfo) {
             /* @var $splFileInfo SplFileInfo */
 
-            if ($i < $index) {
+            if ($i < $index || strpos($splFileInfo->getFilename(), ".") === 0) {
                 $i++;
                 continue;
             }
@@ -122,7 +122,7 @@ class PhotoResource extends Resource {
                             echo "Fatal error in import - aborting operation at index " . $i . ".\n";
                             echo "Please restart import with argument -i " . $i . "!\n";
                             echo $e->getMessage() . " (Code: " . $e->getCode() . ").\n";
-                            $abort = true;
+                            //$abort = true;
                             break;
                         }
 
